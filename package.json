@@ -10,7 +10,7 @@
 		"Other"
 	],
 	"activationEvents": [
-		"onCommand:chrome-tabs.helloWorld"
+		"*"
 	],
 	"main": "./out/extension.js",
 	"contributes": {
@@ -30,12 +30,12 @@
 				"icon": "resources/new-file.svg"
 			  },
 			  {
-				"command": "chrome-tabs.editSite",
+				"command": "pinnedSites.editSite",
 				"title": "Edit Site",
 				"icon": "resources/edit.svg"
 			  },
 			  {
-				"command": "chrome-tabs.deleteSite",
+				"command": "pinnedSites.deleteSite",
 				"title": "Delete Site",
 				"icon": "resources/trash.svg"
 			  },
@@ -92,17 +92,22 @@
 				"command": "pinnedSites.newSite",
 				"when": "view == pinnedSites",
 				"group": "navigation"
+			  },
+			  {
+				"command": "latestSites.searchSite",
+				"when": "view == latestSites",
+				"group": "navigation"
 			  }
 			],
 			"view/item/context": [
 			  {
-				"command": "chrome-tabs.editSite",
-				"when": "view == chromeTabs && viewItem == latestSites",
+				"command": "pinnedSites.editSite",
+				"when": "view == pinnedSites && viewItem == site",
 				"group": "inline"
 			  },
 			  {
-				"command": "chrome-tabs.deleteSite",
-				"when": "view == chromeTabs && viewItem == pinnedSites",
+				"command": "pinnedSites.deleteSite",
+				"when": "view == pinnedSites && viewItem == site",
 				"group": "inline"
 			  }
 			]
