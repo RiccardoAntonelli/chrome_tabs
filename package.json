@@ -1,0 +1,132 @@
+{
+	"name": "chrome-tabs",
+	"displayName": "Chrome Tabs",
+	"description": "Chrome tabs that you can open from VS Code",
+	"version": "0.0.1",
+	"engines": {
+		"vscode": "^1.58.0"
+	},
+	"categories": [
+		"Other"
+	],
+	"activationEvents": [
+		"onCommand:chrome-tabs.helloWorld"
+	],
+	"main": "./out/extension.js",
+	"contributes": {
+		"commands": [
+			{
+				"command": "chrome-tabs.helloWorld",
+				"title": "Hello World"
+			},
+			{
+				"command": "pinnedSites.refresh",
+				"title": "Refresh",
+				"icon": "resources/refresh.svg"
+			  },
+			  {
+				"command": "pinnedSites.newSite",
+				"title": "New Site",
+				"icon": "resources/new-file.svg"
+			  },
+			  {
+				"command": "chrome-tabs.editSite",
+				"title": "Edit Site",
+				"icon": "resources/edit.svg"
+			  },
+			  {
+				"command": "chrome-tabs.deleteSite",
+				"title": "Delete Site",
+				"icon": "resources/trash.svg"
+			  },
+			  {
+				"command": "latestSites.pinSite",
+				"title": "Pin Site",
+				"icon": "resources/edit.svg"
+			  },
+			  {
+				"command": "pinnedSites.newFolder",
+				"title": "New Folder",
+				"icon": "resources/new-folder.svg"
+			  },
+			  {
+				"command": "latestSites.searchSite",
+				"title": "Search Site",
+				"icon": "resources/search.svg"
+			  }
+		],
+		"viewsContainers": {
+			"activitybar": [
+			  {
+				"id": "chrome-tabs",
+				"title": "Chrome Tabs",
+				"icon": "resources/chrome.svg"
+			  }
+			]
+		  },
+		  "views": {
+			"chrome-tabs": [
+			  {
+				"id": "pinnedSites",
+				"name": "Pinned Sites"
+			  },
+			  {
+				"id": "latestSites",
+				"name": "Latest Sites"
+			  }
+			]
+		  },
+		  "menus": {
+			"view/title": [
+			  {
+				"command": "pinnedSites.refresh",
+				"when": "view == pinnedSites",
+				"group": "navigation"
+			  },
+			  {
+				"command": "pinnedSites.newFolder",
+				"when": "view == pinnedSites",
+				"group": "navigation"
+			  },
+			  {
+				"command": "pinnedSites.newSite",
+				"when": "view == pinnedSites",
+				"group": "navigation"
+			  }
+			],
+			"view/item/context": [
+			  {
+				"command": "chrome-tabs.editSite",
+				"when": "view == chromeTabs && viewItem == latestSites",
+				"group": "inline"
+			  },
+			  {
+				"command": "chrome-tabs.deleteSite",
+				"when": "view == chromeTabs && viewItem == pinnedSites",
+				"group": "inline"
+			  }
+			]
+		  }
+	},
+	"scripts": {
+		"vscode:prepublish": "npm run compile",
+		"compile": "tsc -p ./",
+		"watch": "tsc -watch -p ./",
+		"pretest": "npm run compile && npm run lint",
+		"lint": "eslint src --ext ts",
+		"test": "node ./out/test/runTest.js"
+	},
+	"devDependencies": {
+		"@types/vscode": "^1.58.0",
+		"@types/glob": "^7.1.3",
+		"@types/mocha": "^8.2.2",
+		"@types/node": "14.x",
+		"eslint": "^7.27.0",
+		"@typescript-eslint/eslint-plugin": "^4.26.0",
+		"@typescript-eslint/parser": "^4.26.0",
+		"glob": "^7.1.7",
+		"mocha": "^8.4.0",
+		"typescript": "^4.3.2",
+		"vscode-test": "^1.5.2"
+	}
+}
