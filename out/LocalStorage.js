@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.LocalStorageService = void 0;
 class LocalStorageService {
@@ -9,21 +9,22 @@ class LocalStorageService {
     }
     saveSites(id, data) {
         let json = "";
-        data.forEach(site => json += JSON.stringify(site) + "-");
+        data.forEach((site) => {
+            json += JSON.stringify(site) + ";";
+            console.log("Save: " + JSON.stringify(site));
+        });
         json = json.substring(0, json.length - 1);
-        console.log(json);
         this.storage.update(id, json);
     }
     getValue(id) {
         let json = this.storage.get(id, "");
-        console.log(json);
         if (json === "") {
             return [];
         }
-        let split = json.split('-');
+        let split = json.split(";");
         let sites = [];
-        split.forEach(element => {
-            console.log(element);
+        split.forEach((element) => {
+            console.log("Load: " + element);
             let site = JSON.parse(element);
             sites.push(site);
         });

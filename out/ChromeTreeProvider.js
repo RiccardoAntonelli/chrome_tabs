@@ -1,13 +1,13 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ChromeTreeProvider = void 0;
+exports.TreeItem = exports.ChromeTreeProvider = void 0;
 const vscode = require("vscode");
 class ChromeTreeProvider {
     constructor(data) {
         this._onDidChangeTreeData = new vscode.EventEmitter();
         this.onDidChangeTreeData = this._onDidChangeTreeData.event;
         this.data = [];
-        data.forEach(element => {
+        data.forEach((element) => {
             this.data.push(new TreeItem(element, "site"));
         });
     }
@@ -29,20 +29,35 @@ class ChromeTreeProvider {
         }
         return element.children;
     }
+    deleteTreeItem(element) {
+        delete this.data[this.data.indexOf(element)];
+        this.refresh();
+    }
+    addTreeItem(site) {
+        this.data.push(new TreeItem(site, "site"));
+        this.refresh();
+    }
+    editTreeItem(previousElement, element) {
+        this.data[this.data.indexOf(previousElement)] = element;
+        this.refresh();
+    }
 }
 exports.ChromeTreeProvider = ChromeTreeProvider;
 class TreeItem extends vscode.TreeItem {
     constructor(site, contextValue, children) {
-        super(site.name, children === undefined ? vscode.TreeItemCollapsibleState.None :
-            vscode.TreeItemCollapsibleState.Expanded);
+        super(site.name, children === undefined
+            ? vscode.TreeItemCollapsibleState.None
+            : vscode.TreeItemCollapsibleState.Expanded);
         this.children = children;
         this.contextValue = contextValue;
         this.description = site.url;
         this.command = {
-            "title": "Show error",
-            "command": "pinnedSites.openSite",
-            "arguments": [site]
+            title: "View site",
+            command: "pinnedSites.openSite",
+            arguments: [site],
         };
+        this.site = site;
     }
 }
+exports.TreeItem = TreeItem;
 //# sourceMappingURL=ChromeTreeProvider.js.map

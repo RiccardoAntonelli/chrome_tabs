@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -19,43 +19,71 @@ function activate(context) {
     var sites;
     sites = localStorage.getValue("Sites");
     var treeProvider = new ChromeTreeProvider_1.ChromeTreeProvider(sites);
-    vscode.window.registerTreeDataProvider('pinnedSites', treeProvider);
+    vscode.window.registerTreeDataProvider("pinnedSites", treeProvider);
     console.log('Congratulations, your extension "chrome-tabs" is now active!');
-    context.subscriptions.push(vscode.commands.registerCommand('chrome-tabs.helloWorld', () => {
-        vscode.window.showInformationMessage('Hello World from Chrome Tabs!');
+    context.subscriptions.push(vscode.commands.registerCommand("chrome-tabs.helloWorld", () => {
+        vscode.window.showInformationMessage("Hello World from Chrome Tabs!");
     }));
-    context.subscriptions.push(vscode.commands.registerCommand('latestSites.searchSite', () => {
+    context.subscriptions.push(vscode.commands.registerCommand("latestSites.searchSite", () => {
         searchAndOpenSite();
     }));
-    context.subscriptions.push(vscode.commands.registerCommand('pinnedSites.refresh', () => {
+    context.subscriptions.push(vscode.commands.registerCommand("pinnedSites.refresh", () => {
         treeProvider.refresh();
     }));
-    context.subscriptions.push(vscode.commands.registerCommand('pinnedSites.editSite', () => {
-        vscode.window.showInformationMessage('Edit Site');
+    context.subscriptions.push(vscode.commands.registerCommand("pinnedSites.editSite", (node) => {
+        const previousSite = node.site;
+        const previousElement = node;
+        let element = editSite(node, previousElement);
     }));
-    context.subscriptions.push(vscode.commands.registerCommand('pinnedSites.deleteSite', () => {
-        vscode.window.showInformationMessage('Delete Site');
+    context.subscriptions.push(vscode.commands.registerCommand("pinnedSites.deleteSite", (node) => {
+        treeProvider.deleteTreeItem(node);
+        let deletedSite = {
+            name: node.site.name,
+            url: node.site.url,
+            pinned: node.site.pinned,
+            path: node.site.path,
+        };
+        let deleteIndex = -1;
+        for (let i = 0; i < sites.length; i++) {
+            if (sites[i].name === deletedSite.name &&
+                sites[i].url === deletedSite.url &&
+                sites[i].pinned === deletedSite.pinned &&
+                sites[i].path === deletedSite.path) {
+                deleteIndex = i;
+                break;
+            }
+        }
+        delete sites[deleteIndex];
+        console.log("Deleted site: " + deletedSite);
+        localStorage.saveSites("Sites", sites);
+        //vscode.window.showInformationMessage("Delete Site");
     }));
-    context.subscriptions.push(vscode.commands.registerCommand('pinnedSites.newSite', () => {
+    context.subscriptions.push(vscode.commands.registerCommand("pinnedSites.newSite", () => {
         addNewSite();
     }));
-    context.subscriptions.push(vscode.commands.registerCommand('pinnedSites.pinSite', () => {
-        vscode.window.showInformationMessage('Pin Site');
+    context.subscriptions.push(vscode.commands.registerCommand("pinnedSites.pinSite", () => {
+        vscode.window.showInformationMessage("Pin Site");
     }));
-    context.subscriptions.push(vscode.commands.registerCommand('pinnedSites.openSite', (site) => {
+    context.subscriptions.push(vscode.commands.registerCommand("pinnedSites.openSite", (site) => {
         openSite(site);
     }));
     const searchAndOpenSite = () => __awaiter(this, void 0, void 0, function* () {
         var url = yield vscode.window.showInputBox({
             prompt: "Search site - ",
             placeHolder: "Site url | (www.sitename.domain)",
-            validateInput: text => {
+            validateInput: (text) => {
                 //return text.includes("www.") ? "" : "Add www.";
                 var validation = "";
-                text.includes("www.") ? "" : validation = validation.concat("Add www.");
-                text.substring(4, text.length).includes(".") ? "" : validation.length === 0 ? validation = validation.concat("Add domain") : validation = validation.concat(" | Add domain");
+                text.includes("www.")
+                    ? ""
+                    : (validation = validation.concat("Add www."));
+                text.substring(4, text.length).includes(".")
+                    ? ""
+                    : validation.length === 0
+                        ? (validation = validation.concat("Add domain"))
+                        : (validation = validation.concat(" | Add domain"));
                 return validation;
-            }
+            },
         });
         if (url === undefined) {
             return;
@@ -68,15 +96,74 @@ function activate(context) {
             name: name,
             url: url,
             pinned: pinned,
-            path: path
+            path: path,
         };
         sites.push(site);
         localStorage.saveSites("Sites", sites);
         treeProvider.refresh();
     }
-    ;
+    const editSite = (element, previousElement) => __awaiter(this, void 0, void 0, function* () {
+        let options = ["Rename", "Change url", "Change path - TODO"];
+        let result = yield vscode.window.showQuickPick(options);
+        switch (result) {
+            case "Rename":
+                let resultName = yield vscode.window.showInputBox({
+                    prompt: "Rename site - ",
+                    placeHolder: "Site name",
+                });
+                resultName !== undefined
+                    ? ((element.label = resultName), (element.site.name = resultName))
+                    : null;
+                break;
+            case "Change url":
+                let resultUrl = yield vscode.window.showInputBox({
+                    prompt: "Rename site - ",
+                    placeHolder: "Site url | (www.sitename.domain)",
+                    validateInput: (text) => {
+                        //return text.includes("www.") ? "" : "Add www.";
+                        var validation = "";
+                        text.includes("www.")
+                            ? ""
+                            : (validation = validation.concat("Add www."));
+                        text.substring(4, text.length).includes(".")
+                            ? ""
+                            : validation.length === 0
+                                ? (validation = validation.concat("Add domain"))
+                                : (validation = validation.concat(" | Add domain"));
+                        return validation;
+                    },
+                });
+                if (resultUrl !== undefined) {
+                    resultUrl = "https://" + resultUrl + "/";
+                    element.description = resultUrl;
+                    element.site.url = resultUrl;
+                }
+                break;
+            case "Change path - TODO":
+                //TODO: add part to change site path
+                break;
+        }
+        let editIndex = -1;
+        for (let i = 0; i < sites.length; i++) {
+            if (sites[i].name === previousElement.site.name &&
+                sites[i].url === previousElement.site.url &&
+                sites[i].pinned === previousElement.site.pinned &&
+                sites[i].path === previousElement.site.path) {
+                editIndex = i;
+                break;
+            }
+        }
+        sites[editIndex] = element.site;
+        console.log("Edit Site: " + element.site);
+        treeProvider.editTreeItem(previousElement, element);
+        localStorage.saveSites("Sites", sites);
+        //vscode.window.showInformationMessage("Edit Site");
+    });
     const addNewSite = () => __awaiter(this, void 0, void 0, function* () {
-        var name = yield vscode.window.showInputBox({ prompt: "New site - ", placeHolder: "Site name" });
+        var name = yield vscode.window.showInputBox({
+            prompt: "New site - ",
+            placeHolder: "Site name",
+        });
         if (name === undefined) {
             return;
         }
@@ -84,35 +171,47 @@ function activate(context) {
         var url = yield vscode.window.showInputBox({
             prompt: "New site - ",
             placeHolder: "Site url | (www.sitename.domain)",
-            validateInput: text => {
+            validateInput: (text) => {
                 //return text.includes("www.") ? "" : "Add www.";
                 var validation = "";
-                text.includes("www.") ? "" : validation = validation.concat("Add www.");
-                text.substring(4, text.length).includes(".") ? "" : validation.length === 0 ? validation = validation.concat("Add domain") : validation = validation.concat(" | Add domain");
+                text.includes("www.")
+                    ? ""
+                    : (validation = validation.concat("Add www."));
+                text.substring(4, text.length).includes(".")
+                    ? ""
+                    : validation.length === 0
+                        ? (validation = validation.concat("Add domain"))
+                        : (validation = validation.concat(" | Add domain"));
                 return validation;
-            }
+            },
         });
         if (url === undefined) {
             return;
         }
-        url = "http://" + url + "/";
-        saveNewSite(name, url, "", true);
+        url = "https://" + url + "/";
         //TODO: add part of path
         /*var path;
-        while (true) {
-            var folder = await vscode.window.showInputBox({prompt: "New site - ", placeHolder: "Site path", value: path});
-            if (folder === undefined) {return;}
-            else {
-                
-            }
-        }*/
+            while (true) {
+                var folder = await vscode.window.showInputBox({prompt: "New site - ", placeHolder: "Site path", value: path});
+                if (folder === undefined) {return;}
+                else {
+                    
+                }
+            }*/
+        saveNewSite(name, url, "", true);
+        treeProvider.addTreeItem({
+            name: name,
+            url: url,
+            pinned: true,
+            path: "",
+        });
     });
     const openSite = (site) => {
         let currentPanel = vscode.window.createWebviewPanel(site.name === "" ? "Search results" : site.name, site.name === "" ? "Search results" : site.name, vscode.ViewColumn.One, {});
         currentPanel.webview.html = getWebViewContent(site.url);
     };
     const getWebViewContent = (url) => {
-        return `<!DOCTYPE html>
+        return (`<!DOCTYPE html>
 		<html lang="en">
 		<head>
 			<meta charset="UTF-8">
@@ -126,9 +225,11 @@ function activate(context) {
 			  </style>
 		</head>
 		<body>    
-		<iframe src="` + url + `" width="100%" height="100%" ></iframe>
+		<iframe src="` +
+            url +
+            `" width="100%" height="100%" ></iframe>
 		</body>
-		</html>`;
+		</html>`);
     };
 }
 exports.activate = activate;
