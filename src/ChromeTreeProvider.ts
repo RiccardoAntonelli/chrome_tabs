@@ -5,11 +5,32 @@ export class ChromeTreeProvider
   implements vscode.TreeDataProvider<vscode.TreeItem>
 {
   constructor(
-    data: Array<{ name: string; url: string; pinned: boolean; path: string }>
+    elements: Array<{
+      name: string;
+      url: string;
+      pinned: boolean;
+      path: string;
+    }>
   ) {
     this.data = [];
-    data.forEach((element) => {
-      this.data.push(new TreeItem(element, "site"));
+    elements.forEach((element) => {
+      let treeItem: TreeItem;
+      if (element.path !== "") {
+        let folders: Array<string>;
+        folders = element.path.split("/");
+        let treeItem = new TreeItem(element, "site");
+        for (let i = folders.length - 1; i >= 0; i--) {
+          treeItem = new TreeItem(
+            { name: folders[i], url: "", pinned: true, path: "" },
+            "folder",
+            treeItem
+          );
+        }
+        this.data.push(treeItem);
+      } else {
+        treeItem = new TreeItem(element, "site");
+        this.data.push(treeItem);
+      }
     });
   }
 
@@ -70,7 +91,7 @@ export class TreeItem extends vscode.TreeItem {
   constructor(
     site: { name: string; url: string; pinned: boolean; path: string },
     contextValue: string,
-    children?: TreeItem[]
+    children?: TreeItem | undefined
   ) {
     super(
       site.name,
@@ -78,7 +99,15 @@ export class TreeItem extends vscode.TreeItem {
         ? vscode.TreeItemCollapsibleState.None
         : vscode.TreeItemCollapsibleState.Expanded
     );
-    this.children = children;
+    if (this.children === undefined) {
+      if (children !== undefined) {
+        this.children = [children];
+      } else {
+        this.children = undefined;
+      }
+    } else if (children !== undefined) {
+      this.children.push(children);
+    }
     this.contextValue = contextValue;
     this.description = site.url;
     this.command = {

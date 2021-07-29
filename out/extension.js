@@ -140,8 +140,59 @@ function activate(context) {
                 }
                 break;
             case "Change path - TODO":
+                let path;
+                let isBreak = false;
                 //TODO: add part to change site path
-                break;
+                /*let resultPath = await vscode.window.showInputBox({
+                  prompt: "Edit path - ",
+                  placeHolder: "Site path",
+                  validateInput: (text) => {
+                    //return text.includes("www.") ? "" : "Add www.";
+                    let validation = "";
+                    text.endsWith("/")
+                      ? (validation = "Can't end with '/'")
+                      : (validation = "");
+                    return validation;
+                  },
+                });
+                if (resultPath !== undefined) {
+                  element.site.path = resultPath;
+                }*/
+                const options = [
+                    { label: "pizza" },
+                    { label: "pasta" },
+                    { label: "mandolino" },
+                ];
+                const quickPick = vscode.window.createQuickPick();
+                quickPick.totalSteps = 4;
+                quickPick.onDidChangeSelection((selection) => {
+                    if (selection[0]) {
+                        path = "pizza";
+                        if (quickPick.step === 4) {
+                            isBreak = true;
+                        }
+                    }
+                    else if (selection[1]) {
+                        path = "pasta";
+                        quickPick.step += 1;
+                        if (quickPick.step === 4) {
+                            isBreak = true;
+                        }
+                    }
+                    else if (selection[2]) {
+                        path = "mandolino";
+                        if (quickPick.step === 4) {
+                            isBreak = true;
+                        }
+                    }
+                });
+                quickPick.items = options;
+                quickPick.onDidHide(() => quickPick.dispose());
+                quickPick.show();
+                if (isBreak) {
+                    quickPick.hide;
+                    break;
+                }
         }
         let editIndex = -1;
         for (let i = 0; i < sites.length; i++) {
@@ -160,7 +211,7 @@ function activate(context) {
         //vscode.window.showInformationMessage("Edit Site");
     });
     const addNewSite = () => __awaiter(this, void 0, void 0, function* () {
-        var name = yield vscode.window.showInputBox({
+        let name = yield vscode.window.showInputBox({
             prompt: "New site - ",
             placeHolder: "Site name",
         });
@@ -168,12 +219,12 @@ function activate(context) {
             return;
         }
         vscode.window.showInformationMessage(name);
-        var url = yield vscode.window.showInputBox({
+        let url = yield vscode.window.showInputBox({
             prompt: "New site - ",
             placeHolder: "Site url | (www.sitename.domain)",
             validateInput: (text) => {
                 //return text.includes("www.") ? "" : "Add www.";
-                var validation = "";
+                let validation = "";
                 text.includes("www.")
                     ? ""
                     : (validation = validation.concat("Add www."));
@@ -189,6 +240,21 @@ function activate(context) {
             return;
         }
         url = "https://" + url + "/";
+        let path = yield vscode.window.showInputBox({
+            prompt: "Edit path - ",
+            placeHolder: "Site path",
+            validateInput: (text) => {
+                //return text.includes("www.") ? "" : "Add www.";
+                let validation = "";
+                text.endsWith("/")
+                    ? (validation = "Can't end with '/'")
+                    : (validation = "");
+                return validation;
+            },
+        });
+        if (path === undefined) {
+            return;
+        }
         //TODO: add part of path
         /*var path;
             while (true) {
@@ -198,12 +264,12 @@ function activate(context) {
                     
                 }
             }*/
-        saveNewSite(name, url, "", true);
+        saveNewSite(name, url, path, true);
         treeProvider.addTreeItem({
             name: name,
             url: url,
             pinned: true,
-            path: "",
+            path: path,
         });
     });
     const openSite = (site) => {
