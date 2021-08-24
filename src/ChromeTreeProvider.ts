@@ -110,11 +110,11 @@ export class TreeItem extends vscode.TreeItem {
     }
     this.contextValue = contextValue;
     this.description = site.url;
+    this.site = site;
     this.command = {
       title: "View site",
       command: "pinnedSites.openSite",
-      arguments: [site],
+      arguments: [this.site],
     };
-    this.site = site;
   }
 }

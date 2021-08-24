@@ -13,6 +13,7 @@ exports.deactivate = exports.activate = void 0;
 const vscode = require("vscode");
 const ChromeTreeProvider_1 = require("./ChromeTreeProvider");
 const LocalStorage_1 = require("./LocalStorage");
+const console_1 = require("console");
 function activate(context) {
     //let currentPanel: vscode.WebviewPanel | undefined = undefined;
     var localStorage = new LocalStorage_1.LocalStorageService(context.workspaceState);
@@ -64,8 +65,8 @@ function activate(context) {
     context.subscriptions.push(vscode.commands.registerCommand("pinnedSites.pinSite", () => {
         vscode.window.showInformationMessage("Pin Site");
     }));
-    context.subscriptions.push(vscode.commands.registerCommand("pinnedSites.openSite", (site) => {
-        openSite(site);
+    context.subscriptions.push(vscode.commands.registerCommand("pinnedSites.openSite", (item) => {
+        openSite(item);
     }));
     const searchAndOpenSite = () => __awaiter(this, void 0, void 0, function* () {
         var url = yield vscode.window.showInputBox({
@@ -140,60 +141,90 @@ function activate(context) {
                 }
                 break;
             case "Change path - TODO":
-                let path;
-                let isBreak = false;
-                //TODO: add part to change site path
-                /*let resultPath = await vscode.window.showInputBox({
-                  prompt: "Edit path - ",
-                  placeHolder: "Site path",
-                  validateInput: (text) => {
-                    //return text.includes("www.") ? "" : "Add www.";
-                    let validation = "";
-                    text.endsWith("/")
-                      ? (validation = "Can't end with '/'")
-                      : (validation = "");
-                    return validation;
-                  },
+                let path = element.site.path;
+                let resultPath = yield vscode.window.showInputBox({
+                    prompt: "Edit path - ",
+                    placeHolder: "Site path",
+                    value: path,
+                    validateInput: (text) => {
+                        //return text.includes("www.") ? "" : "Add www.";
+                        let validation = "";
+                        text.endsWith("/")
+                            ? (validation = "Can't end with '/'")
+                            : (validation = "");
+                        return validation;
+                    },
                 });
                 if (resultPath !== undefined) {
-                  element.site.path = resultPath;
-                }*/
-                const options = [
-                    { label: "pizza" },
-                    { label: "pasta" },
-                    { label: "mandolino" },
-                ];
-                const quickPick = vscode.window.createQuickPick();
-                quickPick.totalSteps = 4;
-                quickPick.onDidChangeSelection((selection) => {
-                    if (selection[0]) {
-                        path = "pizza";
-                        if (quickPick.step === 4) {
-                            isBreak = true;
-                        }
-                    }
-                    else if (selection[1]) {
-                        path = "pasta";
-                        quickPick.step += 1;
-                        if (quickPick.step === 4) {
-                            isBreak = true;
-                        }
-                    }
-                    else if (selection[2]) {
-                        path = "mandolino";
-                        if (quickPick.step === 4) {
-                            isBreak = true;
-                        }
-                    }
-                });
-                quickPick.items = options;
-                quickPick.onDidHide(() => quickPick.dispose());
-                quickPick.show();
-                if (isBreak) {
-                    quickPick.hide;
-                    break;
+                    element.site.path = resultPath;
                 }
+                break;
         }
+        /*do {
+              isSelecting = true;
+              options = getPathPickerOptions(path);
+              log(options);
+              let value = path;
+              const quickPick = vscode.window.createQuickPick();
+              quickPick.value = path;
+              quickPick.placeholder = "Enter site path";
+              quickPick.title = "Select site path";
+              quickPick.buttons = [vscode.QuickInputButtons.Back];
+              quickPick.items = options.map((label) => ({ label }));
+              quickPick.onDidChangeSelection(([{ label }]) => {
+                //log(value.substring(0, value.length - 1));
+                //log(path);
+                if (
+                  label !== undefined &&
+                  label !== path &&
+                  label.split("/")[label.split("/").length - 1] !== "type a folder"
+                ) {
+                  log(isLast);
+                  log(isBreak);
+                  value = label + "/";
+                  quickPick.value = value;
+                  if (
+                    value.substring(0, value.length - 1) === path &&
+                    isLast === false
+                  ) {
+                    log("a");
+                    value = value.substring(0, value.length - 1);
+                    isLast = true;
+                  } else if (
+                    value.substring(0, value.length - 1) === path &&
+                    isLast
+                  ) {
+                    log("b");
+                    value = value.substring(0, value.length - 1);
+                    isBreak = true;
+                    isLast = false;
+                  } else {
+                    log("c");
+                    isLast = false;
+                    path = value;
+                    isBreak = false;
+                  }
+                  isSelecting = false;
+                  quickPick.hide();
+                  log(path);
+                }
+              });
+              quickPick.onDidChangeValue((changedValue: string) => {
+                value = changedValue;
+                options = getPathPickerOptions(changedValue);
+                options[0] = value;
+                quickPick.items = options.map((label) => ({ label }));
+              });
+              quickPick.onDidHide(() => {
+                isSelecting = false;
+                quickPick.dispose();
+              });
+              quickPick.show();
+              log("restart");
+            } while (!isBreak && !isSelecting);
+            element.site.path = path;
+            break;
+        }*/
         let editIndex = -1;
         for (let i = 0; i < sites.length; i++) {
             if (sites[i].name === previousElement.site.name &&
@@ -208,8 +239,36 @@ function activate(context) {
         console.log("Edit Site: " + element.site);
         treeProvider.editTreeItem(previousElement, element);
         localStorage.saveSites("Sites", sites);
-        //vscode.window.showInformationMessage("Edit Site");
     });
+    const getPathPickerOptions = (path) => {
+        let folders = path.split("/");
+        let options = [];
+        if (path !== "") {
+            sites.forEach((site) => {
+                let siteFolders = site.path.split("/");
+                let i = 0;
+                console_1.log(folders);
+                console_1.log(siteFolders);
+                for (let index = 0; index < folders.length; index++) {
+                    let equal = true;
+                    if (index === folders.length - 1 &&
+                        folders[index] === siteFolders[index] &&
+                        equal) {
+                        if (siteFolders[index + 1] !== undefined) {
+                            options.push(siteFolders[index + 1]);
+                        }
+                    }
+                    else if (folders[index] === siteFolders[index] && equal) {
+                    }
+                    else {
+                        equal = false;
+                    }
+                }
+            });
+        }
+        options.push("type a folder");
+        return options;
+    };
     const addNewSite = () => __awaiter(this, void 0, void 0, function* () {
         let name = yield vscode.window.showInputBox({
             prompt: "New site - ",
@@ -255,7 +314,6 @@ function activate(context) {
         if (path === undefined) {
             return;
         }
-        //TODO: add part of path
         /*var path;
             while (true) {
                 var folder = await vscode.window.showInputBox({prompt: "New site - ", placeHolder: "Site path", value: path});
@@ -273,8 +331,12 @@ function activate(context) {
         });
     });
     const openSite = (site) => {
-        let currentPanel = vscode.window.createWebviewPanel(site.name === "" ? "Search results" : site.name, site.name === "" ? "Search results" : site.name, vscode.ViewColumn.One, {});
-        currentPanel.webview.html = getWebViewContent(site.url);
+        if (site.url === "" || site.url === undefined) {
+        }
+        else {
+            let currentPanel = vscode.window.createWebviewPanel(site.name === "" ? "Search results" : site.name, site.name === "" ? "Search results" : site.name, vscode.ViewColumn.One, {});
+            currentPanel.webview.html = getWebViewContent(site.url);
+        }
     };
     const getWebViewContent = (url) => {
         return (`<!DOCTYPE html>

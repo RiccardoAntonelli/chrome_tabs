@@ -3,6 +3,7 @@ import * as vscode from "vscode";
 import { ChromeTreeProvider } from "./ChromeTreeProvider";
 import { LocalStorageService } from "./LocalStorage";
 import { TreeItem } from "./ChromeTreeProvider";
+import { log } from "console";
 
 export function activate(context: vscode.ExtensionContext) {
   //let currentPanel: vscode.WebviewPanel | undefined = undefined;
@@ -100,8 +101,8 @@ export function activate(context: vscode.ExtensionContext) {
   );
 
   context.subscriptions.push(
-    vscode.commands.registerCommand("pinnedSites.openSite", (site: any) => {
-      openSite(site);
+    vscode.commands.registerCommand("pinnedSites.openSite", (item: any) => {
+      openSite(item);
     })
   );
 
@@ -185,12 +186,11 @@ export function activate(context: vscode.ExtensionContext) {
         }
         break;
       case "Change path - TODO":
-        let path: String;
-        let isBreak = false;
-        //TODO: add part to change site path
-        /*let resultPath = await vscode.window.showInputBox({
+        let path: string = element.site.path;
+        let resultPath = await vscode.window.showInputBox({
           prompt: "Edit path - ",
           placeHolder: "Site path",
+          value: path,
           validateInput: (text) => {
             //return text.includes("www.") ? "" : "Add www.";
             let validation = "";
@@ -202,41 +202,74 @@ export function activate(context: vscode.ExtensionContext) {
         });
         if (resultPath !== undefined) {
           element.site.path = resultPath;
-        }*/
-        const options: vscode.QuickPickItem[] = [
-          { label: "pizza" },
-          { label: "pasta" },
-          { label: "mandolino" },
-        ];
-        const quickPick = vscode.window.createQuickPick();
-        quickPick.totalSteps = 4;
-        quickPick.onDidChangeSelection((selection) => {
-          if (selection[0]) {
-            path = "pizza";
-            if (quickPick.step === 4) {
-              isBreak = true;
-            }
-          } else if (selection[1]) {
-            path = "pasta";
-            quickPick.step += 1;
-            if (quickPick.step === 4) {
-              isBreak = true;
-            }
-          } else if (selection[2]) {
-            path = "mandolino";
-            if (quickPick.step === 4) {
-              isBreak = true;
-            }
-          }
-        });
-        quickPick.items = options;
-        quickPick.onDidHide(() => quickPick.dispose());
-        quickPick.show();
-        if (isBreak) {
-          quickPick.hide;
-          break;
         }
+        break;
     }
+    /*do {
+          isSelecting = true;
+          options = getPathPickerOptions(path);
+          log(options);
+          let value = path;
+          const quickPick = vscode.window.createQuickPick();
+          quickPick.value = path;
+          quickPick.placeholder = "Enter site path";
+          quickPick.title = "Select site path";
+          quickPick.buttons = [vscode.QuickInputButtons.Back];
+          quickPick.items = options.map((label) => ({ label }));
+          quickPick.onDidChangeSelection(([{ label }]) => {
+            //log(value.substring(0, value.length - 1));
+            //log(path);
+            if (
+              label !== undefined &&
+              label !== path &&
+              label.split("/")[label.split("/").length - 1] !== "type a folder"
+            ) {
+              log(isLast);
+              log(isBreak);
+              value = label + "/";
+              quickPick.value = value;
+              if (
+                value.substring(0, value.length - 1) === path &&
+                isLast === false
+              ) {
+                log("a");
+                value = value.substring(0, value.length - 1);
+                isLast = true;
+              } else if (
+                value.substring(0, value.length - 1) === path &&
+                isLast
+              ) {
+                log("b");
+                value = value.substring(0, value.length - 1);
+                isBreak = true;
+                isLast = false;
+              } else {
+                log("c");
+                isLast = false;
+                path = value;
+                isBreak = false;
+              }
+              isSelecting = false;
+              quickPick.hide();
+              log(path);
+            }
+          });
+          quickPick.onDidChangeValue((changedValue: string) => {
+            value = changedValue;
+            options = getPathPickerOptions(changedValue);
+            options[0] = value;
+            quickPick.items = options.map((label) => ({ label }));
+          });
+          quickPick.onDidHide(() => {
+            isSelecting = false;
+            quickPick.dispose();
+          });
+          quickPick.show();
+          log("restart");
+        } while (!isBreak && !isSelecting);
+        element.site.path = path;
+        break;
+    }*/
     let editIndex = -1;
     for (let i = 0; i < sites.length; i++) {
       if (
@@ -253,7 +286,38 @@ export function activate(context: vscode.ExtensionContext) {
     console.log("Edit Site: " + element.site);
     treeProvider.editTreeItem(previousElement, element);
     localStorage.saveSites("Sites", sites);
-    //vscode.window.showInformationMessage("Edit Site");
+  };
+
+  const getPathPickerOptions = (path: string): string[] => {
+    let folders: string[] = path.split("/");
+    let options: string[] = [];
+    if (path !== "") {
+      sites.forEach((site) => {
+        let siteFolders: string[] = site.path.split("/");
+        let i: number = 0;
+
+        log(folders);
+        log(siteFolders);
+
+        for (let index = 0; index < folders.length; index++) {
+          let equal = true;
+          if (
+            index === folders.length - 1 &&
+            folders[index] === siteFolders[index] &&
+            equal
+          ) {
+            if (siteFolders[index + 1] !== undefined) {
+              options.push(siteFolders[index + 1]);
+            }
+          } else if (folders[index] === siteFolders[index] && equal) {
+          } else {
+            equal = false;
+          }
+        }
+      });
+    }
+    options.push("type a folder");
+    return options;
   };
 
   const addNewSite = async (): Promise<any> => {
@@ -301,7 +365,6 @@ export function activate(context: vscode.ExtensionContext) {
     if (path === undefined) {
       return;
     }
-    //TODO: add part of path
     /*var path;
 		while (true) {
 			var folder = await vscode.window.showInputBox({prompt: "New site - ", placeHolder: "Site path", value: path});
@@ -325,13 +388,16 @@ export function activate(context: vscode.ExtensionContext) {
     pinned: boolean;
     path: string;
   }) => {
-    let currentPanel = vscode.window.createWebviewPanel(
-      site.name === "" ? "Search results" : site.name,
-      site.name === "" ? "Search results" : site.name,
-      vscode.ViewColumn.One,
-      {}
-    );
-    currentPanel.webview.html = getWebViewContent(site.url);
+    if (site.url === "" || site.url === undefined) {
+    } else {
+      let currentPanel = vscode.window.createWebviewPanel(
+        site.name === "" ? "Search results" : site.name,
+        site.name === "" ? "Search results" : site.name,
+        vscode.ViewColumn.One,
+        {}
+      );
+      currentPanel.webview.html = getWebViewContent(site.url);
+    }
   };
 
   const getWebViewContent = (url: string) => {
