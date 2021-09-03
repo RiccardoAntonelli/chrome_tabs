@@ -9,19 +9,12 @@ export function activate(context: vscode.ExtensionContext) {
   //let currentPanel: vscode.WebviewPanel | undefined = undefined;
   var localStorage = new LocalStorageService(context.workspaceState);
 
-  var sites: Array<{
-    name: string;
-    url: string;
-    pinned: boolean;
-    path: string;
-  }>;
+  var sites: Array<Site>;
   sites = localStorage.getValue("Sites");
 
   var treeProvider = new ChromeTreeProvider(sites);
 
   vscode.window.registerTreeDataProvider("pinnedSites", treeProvider);
-
-  console.log('Congratulations, your extension "chrome-tabs" is now active!');
 
   context.subscriptions.push(
     vscode.commands.registerCommand("chrome-tabs.helloWorld", () => {
@@ -57,24 +50,19 @@ export function activate(context: vscode.ExtensionContext) {
       "pinnedSites.deleteSite",
       (node: TreeItem) => {
         treeProvider.deleteTreeItem(node);
-        let deletedSite: {
-          name: string;
-          url: string;
-          pinned: boolean;
-          path: string;
-        } = {
+        let deletedSite: Site = new Site({
           name: node.site.name,
           url: node.site.url,
           pinned: node.site.pinned,
-          path: node.site.path,
-        };
+          children: node.site.children,
+        });
         let deleteIndex = -1;
         for (let i = 0; i < sites.length; i++) {
           if (
             sites[i].name === deletedSite.name &&
             sites[i].url === deletedSite.url &&
             sites[i].pinned === deletedSite.pinned &&
-            sites[i].path === deletedSite.path
+            sites[i].children === deletedSite.children
           ) {
             deleteIndex = i;
             break;
@@ -128,7 +116,7 @@ export function activate(context: vscode.ExtensionContext) {
       return;
     }
     url = "http://" + url + "/";
-    openSite({ name: "", url: url, pinned: false, path: "" });
+    openSite(new Site({ name: "", url: url, pinned: false, children: [] }));
   };
 
   function saveNewSite(
@@ -137,12 +125,12 @@ export function activate(context: vscode.ExtensionContext) {
     path: string,
     pinned: boolean
   ) {
-    var site = {
+    var site = new Site({
       name: name,
       url: url,
       pinned: pinned,
-      path: path,
-    };
+      children: [],
+    });
     sites.push(site);
     localStorage.saveSites("Sites", sites);
     treeProvider.refresh();
@@ -186,11 +174,10 @@ export function activate(context: vscode.ExtensionContext) {
         }
         break;
       case "Change path - TODO":
-        let path: string = element.site.path;
         let resultPath = await vscode.window.showInputBox({
           prompt: "Edit path - ",
           placeHolder: "Site path",
-          value: path,
+          value: "TODO: add path",
           validateInput: (text) => {
             //return text.includes("www.") ? "" : "Add www.";
             let validation = "";
@@ -201,7 +188,7 @@ export function activate(context: vscode.ExtensionContext) {
           },
         });
         if (resultPath !== undefined) {
-          element.site.path = resultPath;
+          //TODO: sistema
         }
         break;
     }
@@ -275,8 +262,8 @@ export function activate(context: vscode.ExtensionContext) {
       if (
         sites[i].name === previousElement.site.name &&
         sites[i].url === previousElement.site.url &&
-        sites[i].pinned === previousElement.site.pinned &&
-        sites[i].path === previousElement.site.path
+        sites[i].pinned === previousElement.site.pinned
+        //&& sites[i].path === previousElement.site.path
       ) {
         editIndex = i;
         break;
@@ -288,7 +275,7 @@ export function activate(context: vscode.ExtensionContext) {
     localStorage.saveSites("Sites", sites);
   };
 
-  const getPathPickerOptions = (path: string): string[] => {
+  /*const getPathPickerOptions = (path: string): string[] => {
     let folders: string[] = path.split("/");
     let options: string[] = [];
     if (path !== "") {
@@ -318,7 +305,7 @@ export function activate(context: vscode.ExtensionContext) {
     }
     options.push("type a folder");
     return options;
-  };
+  };*/
 
   const addNewSite = async (): Promise<any> => {
     let name = await vscode.window.showInputBox({
@@ -374,20 +361,17 @@ export function activate(context: vscode.ExtensionContext) {
 			}
 		}*/
     saveNewSite(name, url, path, true);
-    treeProvider.addTreeItem({
-      name: name,
-      url: url,
-      pinned: true,
-      path: path,
-    });
+    treeProvider.addTreeItem(
+      new Site({
+        name: name,
+        url: url,
+        pinned: true,
+        children: [],
+      })
+    );
   };
 
-  const openSite = (site: {
-    name: string;
-    url: string;
-    pinned: boolean;
-    path: string;
-  }) => {
+  const openSite = (site: Site) => {
     if (site.url === "" || site.url === undefined) {
     } else {
       let currentPanel = vscode.window.createWebviewPanel(
@@ -423,6 +407,34 @@ export function activate(context: vscode.ExtensionContext) {
 		</html>`
     );
   };
+}
+
+export class Site {
+  name: string;
+  url: string;
+  pinned: boolean;
+  children: Site[];
+
+  constructor({ name, url, pinned, children = [] }: NamedParameters) {
+    this.name = name;
+    this.url = url;
+    this.pinned = pinned;
+    this.children = children;
+  }
+
+  public save() {
+    return JSON.stringify(this);
+  }
+
+  public load() {
+    return JSON.stringify(this);
+  }
+}
+interface NamedParameters {
+  name: string;
+  url: string;
+  pinned: boolean;
+  children: Site[];
 }
 
 export function deactivate() {}

@@ -9,11 +9,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deactivate = exports.activate = void 0;
+exports.deactivate = exports.Site = exports.activate = void 0;
 const vscode = require("vscode");
 const ChromeTreeProvider_1 = require("./ChromeTreeProvider");
 const LocalStorage_1 = require("./LocalStorage");
-const console_1 = require("console");
 function activate(context) {
     //let currentPanel: vscode.WebviewPanel | undefined = undefined;
     var localStorage = new LocalStorage_1.LocalStorageService(context.workspaceState);
@@ -21,7 +20,6 @@ function activate(context) {
     sites = localStorage.getValue("Sites");
     var treeProvider = new ChromeTreeProvider_1.ChromeTreeProvider(sites);
     vscode.window.registerTreeDataProvider("pinnedSites", treeProvider);
-    console.log('Congratulations, your extension "chrome-tabs" is now active!');
     context.subscriptions.push(vscode.commands.registerCommand("chrome-tabs.helloWorld", () => {
         vscode.window.showInformationMessage("Hello World from Chrome Tabs!");
     }));
@@ -38,18 +36,18 @@ function activate(context) {
     }));
     context.subscriptions.push(vscode.commands.registerCommand("pinnedSites.deleteSite", (node) => {
         treeProvider.deleteTreeItem(node);
-        let deletedSite = {
+        let deletedSite = new Site({
             name: node.site.name,
             url: node.site.url,
             pinned: node.site.pinned,
-            path: node.site.path,
-        };
+            children: node.site.children,
+        });
         let deleteIndex = -1;
         for (let i = 0; i < sites.length; i++) {
             if (sites[i].name === deletedSite.name &&
                 sites[i].url === deletedSite.url &&
                 sites[i].pinned === deletedSite.pinned &&
-                sites[i].path === deletedSite.path) {
+                sites[i].children === deletedSite.children) {
                 deleteIndex = i;
                 break;
             }
@@ -90,15 +88,15 @@ function activate(context) {
             return;
         }
         url = "http://" + url + "/";
-        openSite({ name: "", url: url, pinned: false, path: "" });
+        openSite(new Site({ name: "", url: url, pinned: false, children: [] }));
     });
     function saveNewSite(name, url, path, pinned) {
-        var site = {
+        var site = new Site({
             name: name,
             url: url,
             pinned: pinned,
-            path: path,
-        };
+            children: [],
+        });
         sites.push(site);
         localStorage.saveSites("Sites", sites);
         treeProvider.refresh();
@@ -141,11 +139,10 @@ function activate(context) {
                 }
                 break;
             case "Change path - TODO":
-                let path = element.site.path;
                 let resultPath = yield vscode.window.showInputBox({
                     prompt: "Edit path - ",
                     placeHolder: "Site path",
-                    value: path,
+                    value: "TODO: add path",
                     validateInput: (text) => {
                         //return text.includes("www.") ? "" : "Add www.";
                         let validation = "";
@@ -156,7 +153,7 @@ function activate(context) {
                     },
                 });
                 if (resultPath !== undefined) {
-                    element.site.path = resultPath;
+                    //TODO: sistema
                 }
                 break;
         }
@@ -229,8 +226,9 @@ function activate(context) {
         for (let i = 0; i < sites.length; i++) {
             if (sites[i].name === previousElement.site.name &&
                 sites[i].url === previousElement.site.url &&
-                sites[i].pinned === previousElement.site.pinned &&
-                sites[i].path === previousElement.site.path) {
+                sites[i].pinned === previousElement.site.pinned
+            //&& sites[i].path === previousElement.site.path
+            ) {
                 editIndex = i;
                 break;
             }
@@ -240,35 +238,37 @@ function activate(context) {
         treeProvider.editTreeItem(previousElement, element);
         localStorage.saveSites("Sites", sites);
     });
-    const getPathPickerOptions = (path) => {
-        let folders = path.split("/");
-        let options = [];
-        if (path !== "") {
-            sites.forEach((site) => {
-                let siteFolders = site.path.split("/");
-                let i = 0;
-                console_1.log(folders);
-                console_1.log(siteFolders);
-                for (let index = 0; index < folders.length; index++) {
-                    let equal = true;
-                    if (index === folders.length - 1 &&
-                        folders[index] === siteFolders[index] &&
-                        equal) {
-                        if (siteFolders[index + 1] !== undefined) {
-                            options.push(siteFolders[index + 1]);
-                        }
-                    }
-                    else if (folders[index] === siteFolders[index] && equal) {
-                    }
-                    else {
-                        equal = false;
-                    }
-                }
-            });
-        }
-        options.push("type a folder");
-        return options;
-    };
+    /*const getPathPickerOptions = (path: string): string[] => {
+      let folders: string[] = path.split("/");
+      let options: string[] = [];
+      if (path !== "") {
+        sites.forEach((site) => {
+          let siteFolders: string[] = site.path.split("/");
+          let i: number = 0;
+  
+          log(folders);
+          log(siteFolders);
+  
+          for (let index = 0; index < folders.length; index++) {
+            let equal = true;
+            if (
+              index === folders.length - 1 &&
+              folders[index] === siteFolders[index] &&
+              equal
+            ) {
+              if (siteFolders[index + 1] !== undefined) {
+                options.push(siteFolders[index + 1]);
+              }
+            } else if (folders[index] === siteFolders[index] && equal) {
+            } else {
+              equal = false;
+            }
+          }
+        });
+      }
+      options.push("type a folder");
+      return options;
+    };*/
     const addNewSite = () => __awaiter(this, void 0, void 0, function* () {
         let name = yield vscode.window.showInputBox({
             prompt: "New site - ",
@@ -323,12 +323,12 @@ function activate(context) {
                 }
             }*/
         saveNewSite(name, url, path, true);
-        treeProvider.addTreeItem({
+        treeProvider.addTreeItem(new Site({
             name: name,
             url: url,
             pinned: true,
-            path: path,
-        });
+            children: [],
+        }));
     });
     const openSite = (site) => {
         if (site.url === "" || site.url === undefined) {
@@ -361,6 +361,21 @@ function activate(context) {
     };
 }
 exports.activate = activate;
+class Site {
+    constructor({ name, url, pinned, children = [] }) {
+        this.name = name;
+        this.url = url;
+        this.pinned = pinned;
+        this.children = children;
+    }
+    save() {
+        return JSON.stringify(this);
+    }
+    load() {
+        return JSON.stringify(this);
+    }
+}
+exports.Site = Site;
 function deactivate() { }
 exports.deactivate = deactivate;
 //# sourceMappingURL=extension.js.map

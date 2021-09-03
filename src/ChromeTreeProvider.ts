@@ -1,37 +1,20 @@
 "use strict";
+import { log } from "console";
 import * as vscode from "vscode";
+import { Site } from "./extension";
 
 export class ChromeTreeProvider
   implements vscode.TreeDataProvider<vscode.TreeItem>
 {
   constructor(
-    elements: Array<{
-      name: string;
-      url: string;
-      pinned: boolean;
-      path: string;
-    }>
+    elements: Site[]
   ) {
+    let elementsDone: Site[] = [];
     this.data = [];
-    elements.forEach((element) => {
-      let treeItem: TreeItem;
-      if (element.path !== "") {
-        let folders: Array<string>;
-        folders = element.path.split("/");
-        let treeItem = new TreeItem(element, "site");
-        for (let i = folders.length - 1; i >= 0; i--) {
-          treeItem = new TreeItem(
-            { name: folders[i], url: "", pinned: true, path: "" },
-            "folder",
-            treeItem
-          );
-        }
-        this.data.push(treeItem);
-      } else {
-        treeItem = new TreeItem(element, "site");
-        this.data.push(treeItem);
+    elements.forEach(
+      (element: Site) => {
       }
-    });
+    );
   }
 
   data: TreeItem[];
@@ -69,12 +52,7 @@ export class ChromeTreeProvider
     this.refresh();
   }
 
-  public addTreeItem(site: {
-    name: string;
-    url: string;
-    pinned: boolean;
-    path: string;
-  }) {
+  public addTreeItem(site: Site) {
     this.data.push(new TreeItem(site, "site"));
     this.refresh();
   }
@@ -86,12 +64,12 @@ export class ChromeTreeProvider
 }
 
 export class TreeItem extends vscode.TreeItem {
-  site: { name: string; url: string; pinned: boolean; path: string };
+  site: Site;
   children: TreeItem[] | undefined;
   constructor(
-    site: { name: string; url: string; pinned: boolean; path: string },
+    site: Site,
     contextValue: string,
-    children?: TreeItem | undefined
+    children?: TreeItem[] | undefined
   ) {
     super(
       site.name,
@@ -101,12 +79,12 @@ export class TreeItem extends vscode.TreeItem {
     );
     if (this.children === undefined) {
       if (children !== undefined) {
-        this.children = [children];
+        this.children = children;
       } else {
         this.children = undefined;
       }
     } else if (children !== undefined) {
-      this.children.push(children);
+      this.children = children;
     }
     this.contextValue = contextValue;
     this.description = site.url;
