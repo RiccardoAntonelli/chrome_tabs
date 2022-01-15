@@ -22,96 +22,92 @@
 			{
 				"command": "pinnedSites.refresh",
 				"title": "Refresh",
-				"icon": "resources/refresh.svg"
-			  },
-			  {
+				"icon": {
+					"dark": "resources/dark/refresh.svg",
+					"light": "resources/light/refresh.svg"
+				}
+			},
+			{
 				"command": "pinnedSites.newSite",
 				"title": "New Site",
-				"icon": "resources/new-file.svg"
-			  },
-			  {
+				"icon": {
+					"dark": "resources/dark/add.svg",
+					"light": "resources/light/add.svg"
+				}
+			},
+			{
 				"command": "pinnedSites.editSite",
 				"title": "Edit Site",
-				"icon": "resources/edit.svg"
-			  },
-			  {
+				"icon": {
+					"dark": "resources/dark/edit.svg",
+					"light": "resources/light/edit.svg"
+				}
+			},
+			{
 				"command": "pinnedSites.deleteSite",
 				"title": "Delete Site",
-				"icon": "resources/trash.svg"
-			  },
-			  {
-				"command": "latestSites.pinSite",
-				"title": "Pin Site",
-				"icon": "resources/edit.svg"
-			  },
-			  {
-				"command": "pinnedSites.newFolder",
-				"title": "New Folder",
-				"icon": "resources/new-folder.svg"
-			  },
-			  {
-				"command": "latestSites.searchSite",
+				"icon": {
+					"dark": "resources/dark/trash.svg",
+					"light": "resources/light/trash.svg"
+				}
+			},
+			{
+				"command": "pinnedSites.searchSite",
 				"title": "Search Site",
-				"icon": "resources/search.svg"
-			  }
+				"icon": {
+					"dark": "resources/dark/search.svg",
+					"light": "resources/light/search.svg"
+				}
+			}
 		],
 		"viewsContainers": {
 			"activitybar": [
-			  {
-				"id": "chrome-tabs",
-				"title": "Chrome Tabs",
-				"icon": "resources/chrome.svg"
-			  }
+				{
+					"id": "chrome-tabs",
+					"title": "Chrome Tabs",
+					"icon": "resources/chrome.svg"
+				}
 			]
-		  },
-		  "views": {
+		},
+		"views": {
 			"chrome-tabs": [
-			  {
-				"id": "pinnedSites",
-				"name": "Pinned Sites"
-			  },
-			  {
-				"id": "latestSites",
-				"name": "Latest Sites"
-			  }
+				{
+					"id": "pinnedSites",
+					"name": "Sites"
+				}
 			]
-		  },
-		  "menus": {
+		},
+		"menus": {
 			"view/title": [
-			  {
-				"command": "pinnedSites.refresh",
-				"when": "view == pinnedSites",
-				"group": "navigation"
-			  },
-			  {
-				"command": "pinnedSites.newFolder",
-				"when": "view == pinnedSites",
-				"group": "navigation"
-			  },
-			  {
-				"command": "pinnedSites.newSite",
-				"when": "view == pinnedSites",
-				"group": "navigation"
-			  },
-			  {
-				"command": "latestSites.searchSite",
-				"when": "view == latestSites",
-				"group": "navigation"
-			  }
+				{
+					"command": "pinnedSites.refresh",
+					"when": "view == pinnedSites",
+					"group": "navigation"
+				},
+				{
+					"command": "pinnedSites.newSite",
+					"when": "view == pinnedSites",
+					"group": "navigation"
+				},
+				{
+					"command": "pinnedSites.searchSite",
+					"when": "view == pinnedSites",
+					"group": "navigation"
+				}
 			],
 			"view/item/context": [
-			  {
-				"command": "pinnedSites.editSite",
-				"when": "view == pinnedSites && viewItem == site",
-				"group": "inline"
-			  },
-			  {
-				"command": "pinnedSites.deleteSite",
-				"when": "view == pinnedSites && viewItem == site",
-				"group": "inline"
-			  }
+				{
+					"command": "pinnedSites.editSite",
+					"when": "view == pinnedSites && viewItem == site",
+					"group": "inline"
+				},
+				{
+					"command": "pinnedSites.deleteSite",
+					"when": "view == pinnedSites && viewItem == site",
+					"group": "inline"
+				}
 			]
-		  }
+		}
 	},
 	"scripts": {
 		"vscode:prepublish": "npm run compile",

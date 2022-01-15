@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.LocalStorageService = void 0;
 const { stringify, parse } = require("flatted");
-const Site_1 = require("./Site");
+const site_1 = require("./site");
 class LocalStorageService {
     constructor(storage) {
         this.storage = storage;
@@ -16,9 +16,9 @@ class LocalStorageService {
                 json += stringify(item);
                 json += ";";
             }
-            json = json.substring(0, json.length - 1);
+            json = json.substring(0, json.length - 2);
         }
-        json += "]";
+        json = json + "]";
         console.log(json);
         this.storage.update("Sites", json);
     }
@@ -30,18 +30,20 @@ class LocalStorageService {
             return [];
         }
         if (json.includes(";")) {
-            jsons = json.substring(1).split(";");
+            jsons = json.substring(1, json.length).split(";");
         }
         else {
-            jsons = [json.substring(1)];
+            jsons = [json.substring(1, json.length)];
         }
+        console.log(jsons.toString());
         jsons.forEach((value, index) => {
-            let result = Object.assign(new Site_1.TreeItem(), parse(value)[0]);
+            let result = Object.assign(new site_1.TreeItem(), parse(value));
             result.set();
             sites[index] = result;
+            console.log(result);
         });
         return sites;
     }
 }
 exports.LocalStorageService = LocalStorageService;
-//# sourceMappingURL=LocalStorage.js.map
+//# sourceMappingURL=local_storage.js.map
