@@ -2,9 +2,14 @@
 	"name": "chrome-tabs",
 	"displayName": "Chrome Tabs",
 	"description": "Chrome tabs that you can open from VS Code",
-	"version": "0.0.1",
+	"publisher": "RiccardoAntonelli",
+	"version": "1.0.0",
 	"engines": {
 		"vscode": "^1.58.0"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/RiccardoAntonelli/chrome_tabs"
 	},
 	"categories": [
 		"Other"
