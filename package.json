@@ -3,7 +3,7 @@
 	"displayName": "Chrome Tabs",
 	"description": "Chrome tabs that you can open from VS Code",
 	"publisher": "RiccardoAntonelli",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"engines": {
 		"vscode": "^1.58.0"
 	},

@@ -31,7 +31,7 @@ function activate(context) {
                 break;
             }
         }
-        delete treeItems[deleteIndex];
+        treeItems.splice(deleteIndex, 1);
         localStorage.saveSites(treeItems);
     }));
     context.subscriptions.push(vscode.commands.registerCommand("pinnedSites.newSite", () => {

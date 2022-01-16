@@ -48,7 +48,7 @@ export function activate(context: vscode.ExtensionContext) {
             break;
           }
         }
-        delete treeItems[deleteIndex];
+        treeItems.splice(deleteIndex, 1);
         localStorage.saveSites(treeItems);
       }
     )
@@ -71,7 +71,6 @@ export function activate(context: vscode.ExtensionContext) {
       prompt: "Search site - ",
       placeHolder: "Site url | (www.sitename.domain)",
       validateInput: (text) => {
-        //return text.includes("www.") ? "" : "Add www.";
         var validation = "";
         text.includes("www.")
           ? ""
