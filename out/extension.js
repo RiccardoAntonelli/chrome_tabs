@@ -45,7 +45,6 @@ function activate(context) {
             prompt: "Search site - ",
             placeHolder: "Site url | (www.sitename.domain)",
             validateInput: (text) => {
-                //return text.includes("www.") ? "" : "Add www.";
                 var validation = "";
                 text.includes("www.")
                     ? ""
